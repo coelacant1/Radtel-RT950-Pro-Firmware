@@ -129,8 +129,21 @@ typedef struct __attribute__((packed)) {
 /* Extended config: 0x00A000 ----------------------------------------- */
 #define FLASH_ADDR_DTMF         0x00A000    /* DTMF contacts + PTT config */
 #define FLASH_ADDR_SI4732       0x00B000    /* FM/AM/SSB channels + config */
-#define FLASH_ADDR_ZONE_NAMES   0x00C000    /* 10 zone names x 16 bytes */
-#define FLASH_ZONE_NAME_SIZE    16          /* 12 chars + padding */
+/* Zone names: 0x00C000, ten slots on a 16-byte pitch.
+ *
+ * Confirmed against a dump of a physical RT-950 Pro running V0.29 -- 0x00C000
+ * holds the OEM defaults "ZoneOne".."ZoneTen", 0xFF-padded, 0x00C0A0 onward
+ * erased.
+ *
+ * Slot pitch (16) and name length (12) are separate values. They were one
+ * FLASH_ZONE_NAME_SIZE of 16, which indexes correctly -- the pitch is what
+ * indexing needs -- but is wrong as a length, so reading a slot pulls in four
+ * bytes of the next one. Splitting them keeps both uses honest. Radtel's RT-900
+ * header agrees: BANK_NAME_SIZE 16, commented "supports 12 bytes, stored in
+ * 16". */
+#define FLASH_ADDR_ZONE_NAMES   0x00C000    /* 10 zone names, 16-byte stride */
+#define FLASH_ZONE_NAME_STRIDE  16          /* slot pitch */
+#define FLASH_ZONE_NAME_SIZE    12          /* bytes of each slot used for text */
 #define FLASH_ZONE_MAX          10
 #define FLASH_ADDR_FM_NAMES     0x00D010    /* 15 FM channel names x 16B */
 #define FLASH_ADDR_AM_NAMES     0x00D110    /* 15 AM channel names x 16B */

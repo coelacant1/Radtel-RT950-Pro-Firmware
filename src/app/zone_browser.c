@@ -1,8 +1,9 @@
 /*
  * zone_browser.c - Zone selection browser for the RT-950 Pro
  *
- * Reads 10 zone names from SPI flash at 0x00C000.
- * Each name: 16 bytes, ASCII, 0xFF-padded.
+ * Reads zone names from SPI flash at 0x00C000, 16-byte stride, 12 bytes used.
+ * Address confirmed by dumping a physical radio: the ten OEM defaults
+ * "ZoneOne".."ZoneTen" are stored there.
  * User selects with encoder + MENU, cancels with EXIT.
  */
 
@@ -45,7 +46,8 @@ void zone_read_name(uint8_t index, char *buf)
     }
 
     uint8_t raw[FLASH_ZONE_NAME_SIZE];
-    uint32_t addr = FLASH_ADDR_ZONE_NAMES + (uint32_t)index * FLASH_ZONE_NAME_SIZE;
+    /* stride (16) and read length (12) differ — see flash_layout.h */
+    uint32_t addr = FLASH_ADDR_ZONE_NAMES + (uint32_t)index * FLASH_ZONE_NAME_STRIDE;
     spi_flash_read(addr, raw, FLASH_ZONE_NAME_SIZE);
 
     /* Copy, converting 0xFF padding to NUL */
