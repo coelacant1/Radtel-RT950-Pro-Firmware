@@ -23,12 +23,17 @@ void flash_xor_copy(uint8_t *dst, const uint8_t *src, uint16_t len)
     for (uint16_t i = 0; i < len; i++) {
         uint8_t kb = flash_xor_key[ki];
         uint8_t sb = src[i];
+        /* Narrow the inverse to uint8_t in its own object. Written inline as
+         * (uint8_t)(kb ^ 0xFF) it is still an int-promoted complement at the
+         * point of comparison, which -Werror=sign-compare rejects on gcc 10.3.
+         * Semantics are unchanged. */
+        uint8_t kb_inv = (uint8_t)(kb ^ 0xFFu);
 
         if (kb == 0x20 ||           /* key byte is space */
             sb == 0x00 ||           /* source is zero */
             sb == 0xFF ||           /* source is erased flash */
             sb == kb   ||           /* source matches key */
-            sb == (uint8_t)(kb ^ 0xFF))  /* source matches inverse key */
+            sb == kb_inv)           /* source matches inverse key */
         {
             dst[i] = sb;           /* copy as-is */
         } else {

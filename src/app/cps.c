@@ -30,7 +30,12 @@
 /* Model identification -------------------------------------------- */
 /* V0.27 fw 0x080003E0: "RT-950" + 6 spaces = 12 printable chars */
 
-static const char model_string[12] = "RT-950      ";
+/* Exactly 12 bytes on the wire, space-padded and deliberately NOT
+ * NUL-terminated: the CPS reads a fixed-width field, not a C string. GCC 15
+ * added -Wunterminated-string-initialization, which flags this by default;
+ * nonstring records that the missing terminator is intentional. The value is
+ * only ever passed to a sized write. */
+static const char model_string[12] __attribute__((nonstring)) = "RT-950      ";
 
 /* State ----------------------------------------------------------- */
 
